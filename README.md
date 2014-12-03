@@ -1,12 +1,12 @@
-CFB Rankings
-===
+#CFB Rankings
 
-#Rankings
+##Rankings
 
 This is a simple algorithm I developed for ranking college football teams. 
-[View most recent rankings here](http://wesbarnett.github.io/cfb)
+[View most recent rankings here](http://wesbarnett.github.io/cfb). Feedback,
+forks, bug reports, pull requests welcome.
 
-# About
+##About
 
 The following process is run 10,000 times. First, a randomly generated preseason
 ranking of all FBS teams is generated. Then win/losses are read in for each
