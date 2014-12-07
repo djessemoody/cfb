@@ -98,7 +98,8 @@ def doScraping(f,year,week):
 
 thisweek = 14;
 year = 2014;
-for week in range(1,thisweek+1):
-	doScraping(f,year,str(week));
+f = open("week15.txt","w")
+#for week in range(1,thisweek+1):
+doScraping(f,year,str(15))
 
 f.close();

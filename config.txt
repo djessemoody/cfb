@@ -1,5 +1,5 @@
 10000
 teams.txt
-week14.txt
-rankings-2014-week14.txt
-plot-2014-week14.txt
+week15.txt
+rankings-2014-week15.txt
+plot-2014-week15.txt
