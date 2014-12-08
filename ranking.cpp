@@ -1,3 +1,4 @@
+/** @author James W. Barnett */
 
 #include <ctime>
 #include <fstream>
