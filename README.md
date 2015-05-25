@@ -3,8 +3,7 @@
 ##Rankings
 
 This is a simple algorithm I developed for ranking college football teams. 
-[View most recent rankings here](http://wesbarnett.github.io/cfb). Feedback,
-forks, bug reports, pull requests welcome.
+2014 rankings for each week are [here](https://github.com/wesbarnett/cfb/blob/master/2014/README.md).
 
 ##About
 
