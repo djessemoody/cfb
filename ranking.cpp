@@ -11,30 +11,37 @@
 #include <iomanip>
 using namespace std;
 
+const int bootstrap_n = 50;
+
 // Reference:
 // http://stackoverflow.com/questions/5056645/sorting-stdmap-using-value
 template<typename A, typename B>
-std::pair<B,A> flip_pair(const std::pair<A,B> &p) {
+std::pair<B,A> flip_pair(const std::pair<A,B> &p) 
+{
     return std::pair<B,A>(p.second, p.first);
 }
 
 // Reference:
 // http://stackoverflow.com/questions/5056645/sorting-stdmap-using-value
 template<typename A, typename B>
-std::multimap<B,A> flip_map(const std::map<A,B> &src) {
+std::multimap<B,A> flip_map(const std::map<A,B> &src) 
+{
     std::multimap<B,A> dst;
     std::transform(src.begin(), src.end(), std::inserter(dst, dst.begin()), 
                    flip_pair<A,B>);
     return dst;
 }
 
-int main(int argc, char *argv[]) {
+int main(int argc, char *argv[]) 
+{
 
-	 // higher means less movementFactor per win/loss, lower means more
-	 // movementFactor less than 2.0 means the two teams will pass each other
-	 // movementFactor less than 1.0 means the two teams completely swap (too much
-	 // incentive for teams that lose alot to have a couple of wins and be
-	 // highly ranked).
+	 /* 
+	  * higher means less movementFactor per win/loss, lower means more
+	  * movementFactor less than 2.0 means the two teams will pass each other
+	  * movementFactor less than 1.0 means the two teams completely swap (too much
+	  * incentive for teams that lose alot to have a couple of wins and be
+	  * highly ranked).
+	  */
 	const double movementFactor = 4.0;
 	const int maxOffset = 25;
 	const int AVGS = 0;
@@ -47,6 +54,8 @@ int main(int argc, char *argv[]) {
 	double offset;
 	double toppoints;
 	ifstream iFS;
+	int frame;
+	int frame_i;
 	int i;
 	int j;
 	int k;
@@ -57,7 +66,9 @@ int main(int argc, char *argv[]) {
 	int newWinnerRank;
 	int winnerRank;
 	map <string, double> avgRank;
-	map <string, double> stdDev;
+	map <string, double> uncertainty;
+	map <string, double> ranks_bootavg;
+	map <string, double> ranks_bootvar;
 	multimap<double,string> avgRankSorted;
 	ofstream oFS;
 	string configfile;
@@ -74,7 +85,8 @@ int main(int argc, char *argv[]) {
 	string tmp;
 	vector <string> teams;
 
-	if (argc != 2) {
+	if (argc != 2) 
+	{
 		cout << "First argument must be configuration file." << endl;
 		return -1;
 	}
@@ -97,13 +109,21 @@ int main(int argc, char *argv[]) {
 	cout << "Ranking will be output to: " << outfile << endl;
 	cout << "Plot file is: " << plotfile << endl;
 
+	vector < map <string, double> > ranks_boot(NRAND);
+	vector < map <string, double> > ranks_all(NRAND);
+
 	iFS.open(teamsfile.c_str());
 
 	// Read in the FBS teams from a file
-	while(getline(iFS,team)) {
+	while(getline(iFS,team)) 
+	{
 		teams.push_back(team);
 		avgRank[team] = 0.0;
-		stdDev[team] = 0.0;
+		for (i = 0; i < NRAND; i++)
+		{
+			ranks_all.at(i)[team] = 0.0;
+			ranks_boot.at(i)[team] = 0.0;
+		}
 	}
 
 	iFS.close();
@@ -112,108 +132,165 @@ int main(int argc, char *argv[]) {
 
 	cout << "Number of teams: " << NTEAMS << endl;
 
-	// First run is for getting the mean
-	// Second run is for getting the standard deviation
-	for (x = 0; x < NRUNS; x++) {
+	for (i = 0; i < NRAND; i++) 
+	{
 
-		if (x == AVGS) cout << "Getting averages..." << endl;
-		if (x == STDDEVS) cout << "Calculating standard deviations..." << endl;
+		cout << i << endl;
 
-		for (i = 0; i < NRAND; i++) {
+		random_shuffle(teams.begin(), teams.end());
 
-			cout << i << endl;
+		iFS.open(winslossfile.c_str());
 
-			random_shuffle(teams.begin(), teams.end());
+		while (!iFS.eof()) 
+		{
 
-			iFS.open(winslossfile.c_str());
+			getline(iFS,winner);
+			getline(iFS,loser);
+			getline(iFS,space);
+			if (iFS.eof()) 
+			{	
+				break;
+			}
 
-			while (!iFS.eof()) {
+			winnerIsFBS = false;
+			loserIsFBS = false;
+			for (j = 0; j < teams.size(); j++) 
+			{
 
-				getline(iFS,winner);
-				getline(iFS,loser);
-				getline(iFS,space);
-				if (iFS.eof()) break;
-
-				winnerIsFBS = false;
-				loserIsFBS = false;
-				for (j = 0; j < teams.size(); j++) {
-
-					if (teams.at(j) == winner) {
-						winnerRank = j; 
-						winnerIsFBS = true;
-					}
-					if (teams.at(j) == loser) {
-						loserRank = j;
-						loserIsFBS = true;
-					}
-					if (loserIsFBS && winnerIsFBS) break;
+				if (teams.at(j) == winner) 
+				{
+					winnerRank = j; 
+					winnerIsFBS = true;
+				}
+				if (teams.at(j) == loser) 
+				{
+					loserRank = j;
+					loserIsFBS = true;
 				}
 
-				// If both teams are FBS and the loser is more highly ranked than
-				// the winner, the loser moves down and the winner moves up. You
-				// can only move up or down the maximum offset. You can't move
-				// up higher than number 1, and you can't be lower than the
-				// number of teams. If you the team you beat is just above you,
-				// you switch spots. If you play an FCS team and lose you go to
-				// the bottom. After all of that, shift the other teams around
-				// the movement.
-				if (winnerIsFBS && loserIsFBS && winnerRank > loserRank) {
-					offset = (winnerRank - loserRank) / movementFactor;
-					if (offset > maxOffset) offset = maxOffset;
-					tmpWinner = teams.at(winnerRank);
-					tmpLoser = teams.at(loserRank);
-					newLoserRank = (loserRank + offset);
-					newWinnerRank = (winnerRank - offset);
-					if (newWinnerRank < 1) newWinnerRank = 1;
-					if (newLoserRank > NTEAMS) newLoserRank = NTEAMS;
-					if (newWinnerRank == newLoserRank) newWinnerRank = newLoserRank + 1;
-					for (k = winnerRank-1; k >= newWinnerRank; k--) {
-						teams.at(k+1) = teams.at(k);
-					}
-					for (k = loserRank+1; k <= newLoserRank; k++) {
-						teams.at(k-1) = teams.at(k);
-					}
-					teams.at(newLoserRank) = tmpLoser;
-					teams.at(newWinnerRank) = tmpWinner;
-				}
-				if ((not winnerIsFBS) && loserIsFBS) {
-					for (k = loserRank+1 ; k < teams.size(); k++) {
-						teams.at(k-1) = teams.at(k);
-					}
-					teams.at(teams.size()-1) = loser;
+				if (loserIsFBS && winnerIsFBS) 
+				{ 
+					break;
 				}
 
 			}
 
-			iFS.close();
-
-			// Save the results from this permutation
-			if (x == 0) {
-				for (j = 0; j < teams.size(); j++) {
-					avgRank[teams.at(j)] += j;
+			/* 
+			 * If both teams are FBS and the loser is more highly ranked than
+			 * the winner, the loser moves down and the winner moves up. You
+			 * can only move up or down the maximum offset. You can't move
+			 * up higher than number 1, and you can't be lower than the number of
+			 * teams. If you the team you beat is just above you,
+			 * you switch spots. If you play an FCS team and lose you go to
+			 * the bottom. After all of that, shift the other teams around the
+			 * movement.
+			 */
+			if (winnerIsFBS && loserIsFBS && winnerRank > loserRank) 
+			{
+				offset = (winnerRank - loserRank) / movementFactor;
+				if (offset > maxOffset)
+				{	
+					offset = maxOffset;
 				}
-			} else if (x == 1) {
-				for (j = 0; j < teams.size(); j++) {
-					stdDev[teams.at(j)] += pow(j-avgRank[teams.at(j)],2);
+				tmpWinner = teams.at(winnerRank);
+				tmpLoser = teams.at(loserRank);
+				newLoserRank = (loserRank + offset);
+				newWinnerRank = (winnerRank - offset);
+				if (newWinnerRank < 1) 
+				{ 
+					newWinnerRank = 1;
 				}
+				if (newLoserRank > NTEAMS) 
+				{ 
+					newLoserRank = NTEAMS;
+				}
+				if (newWinnerRank == newLoserRank) 
+				{ 
+					newWinnerRank = newLoserRank + 1;
+				}
+				for (k = winnerRank-1; k >= newWinnerRank; k--) 
+				{
+					teams.at(k+1) = teams.at(k);
+				}
+				for (k = loserRank+1; k <= newLoserRank; k++) 
+				{
+				teams.at(k-1) = teams.at(k);
+				}
+				teams.at(newLoserRank) = tmpLoser;
+				teams.at(newWinnerRank) = tmpWinner;
 			}
+			if ((not winnerIsFBS) && loserIsFBS) 
+			{
+				for (k = loserRank+1 ; k < teams.size(); k++) 
+				{
+					teams.at(k-1) = teams.at(k);
+				}
+				teams.at(teams.size()-1) = loser;
+			}
+
+		}
+
+		iFS.close();
+
+		// Save the results from this permutation
+		for (j = 0; j < teams.size(); j++) 
+		{
+			avgRank[teams.at(j)] += j;
+			ranks_all.at(i).at(teams.at(j)) += j;
+		}
 		
-		}
-
-		// Normalizations
-		if (x == AVGS) {
-			for (i = 0; i < teams.size(); i++) {
-				avgRank[teams.at(i)] /= (double)NRAND;
-			}
-		} else if (x == STDDEVS) {
-			for (i = 0; i < teams.size(); i++) {
-				stdDev[teams.at(i)] /= ((double)NRAND-1.0);
-				stdDev[teams.at(i)] = sqrt(stdDev[teams.at(i)]);
-			}
-		}
-
 	}
 
+	// Normalization
+	for (i = 0; i < teams.size(); i++) 
+	{
+		avgRank[teams.at(i)] /= (double)NRAND;
+	}
+
+	// Bootstrap uncertainty calculation
+	for (j = 0; j < teams.size(); j++)
+	{
+		ranks_bootvar[teams.at(j)] = 0.0;
+		ranks_bootavg[teams.at(j)] = 0.0;
+	}
+	for (i = 0; i < bootstrap_n; i++)
+	{
+		cout << i << endl;
+
+		for (frame_i = 0; frame_i < NRAND; frame_i++)
+		{
+			frame = rand() % NRAND;
+
+			for (j = 0; j < teams.size(); j++)
+			{
+				ranks_boot.at(i).at(teams.at(j)) += ranks_all.at(frame).at(teams.at(j));
+			}
+		}
+		for (j = 0; j < teams.size(); j++)
+		{
+			ranks_boot.at(i).at(teams.at(j)) /= (double)NRAND;
+			ranks_bootavg[teams.at(j)] += ranks_boot.at(i).at(teams.at(j));
+		}
+	}
+
+	for (j = 0; j < teams.size(); j++)
+	{
+		ranks_bootavg[teams.at(j)] /= (double) bootstrap_n;
+	}
+
+	for (i = 0; i < bootstrap_n; i++)
+	{
+		for (j = 0; j < teams.size(); j++)
+		{
+			ranks_bootvar[teams.at(j)] += pow(ranks_bootavg[teams.at(j)] - ranks_boot.at(i).at(teams.at(j)),2);
+		}
+	}
+
+	for (j = 0; j < teams.size(); j++)
+	{
+		ranks_bootvar[teams.at(j)] /= (double) (bootstrap_n - 1);
+		uncertainty[teams.at(j)] = sqrt(ranks_bootvar[teams.at(j)]);
+	}
 
 	avgRankSorted = flip_map(avgRank);
 
@@ -224,10 +301,11 @@ int main(int argc, char *argv[]) {
 	// Reference:
 	// http://stackoverflow.com/questions/110157/how-to-retrieve-all-keys-or-values-from-a-stdmap
 	i = 1;
-	oFS << " Rank | Team                           | Score      | Std. Dev.  " << endl;
+	oFS << " Rank | Team                           | Score      | Uncertainty" << endl;
 	oFS << "------|--------------------------------|------------|------------" << endl;
-	for (map<double,string>::iterator it=avgRankSorted.begin(); it != avgRankSorted.end(); ++it) {
-		oFS << right << setw(5) << i << " | " << setw(25) << left << it->second << " | " << right << setw(10) << it->first << " | " << right << setw(10) << stdDev[it->second] << endl;
+	for (map<double,string>::iterator it=avgRankSorted.begin(); it != avgRankSorted.end(); ++it) 
+	{
+		oFS << right << setw(5) << i << " | " << setw(25) << left << it->second << " | " << right << setw(10) << it->first << " | " << right << setw(10) << uncertainty[it->second] << endl;
 		i++;
 	}
 
@@ -236,8 +314,9 @@ int main(int argc, char *argv[]) {
 	oFS.open(plotfile.c_str());
 
 	i = 1;
-	for (map<double,string>::iterator it=avgRankSorted.begin(); it != avgRankSorted.end(); ++it) {
-		oFS << i << "  " << it->first << "  " << stdDev[it->second] << endl;
+	for (map<double,string>::iterator it=avgRankSorted.begin(); it != avgRankSorted.end(); ++it) 
+	{
+		oFS << i << "  " << it->first << "  " << uncertainty[it->second] << endl;
 		i++;
 	}
 
