@@ -175,6 +175,6 @@ plot 'plot-2014-week15-top25.txt' u ($2+1):1:($4) w labels left, \
 	'plot-2014-week15-top25.txt'u 2:1:3  w xe
 
 set title "2014 Week 16 - Top 25"
-set out "week16.png"
+set out "week16-top25.png"
 plot 'plot-2014-week16-top25.txt' u ($2+1):1:($4) w labels left, \
 	'plot-2014-week16-top25.txt'u 2:1:3  w xe
