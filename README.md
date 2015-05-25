@@ -19,5 +19,5 @@ week. The last week's ranking is saved.
 
 After these 10,000 iterations the last week's ranking is averaged for each team
 and is the team's score (lower is better). Teams are then ranked by their
-scores.  That is the final ranking. I also provide a standard deviation (which ends up
-being quite large in my opinion except for the very worst teams).
+scores.  That is the final ranking. I also provide a bootstrapped uncertainty
+analysis.

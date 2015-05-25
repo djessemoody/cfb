@@ -180,10 +180,9 @@ int main(int argc, char *argv[])
 			 * the winner, the loser moves down and the winner moves up. You
 			 * can only move up or down the maximum offset. You can't move
 			 * up higher than number 1, and you can't be lower than the number of
-			 * teams. If you the team you beat is just above you,
-			 * you switch spots. If you play an FCS team and lose you go to
-			 * the bottom. After all of that, shift the other teams around the
-			 * movement.
+			 * teams. If the team you beat is just above you, you switch spots.
+			 * If you play an FCS team and lose you go to the bottom. After all
+			 * of that, shift the other teams around the movement.
 			 */
 			if (winnerIsFBS && loserIsFBS && winnerRank > loserRank) 
 			{

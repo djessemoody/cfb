@@ -1,4 +1,4 @@
-1000
+10000
 teams.txt
 week15.txt
 rankings-2014-week15.txt
