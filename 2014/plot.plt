@@ -9,7 +9,11 @@ set xtics nomirror
 set ytics nomirror
 #set size square
 
-set style line 11 lc rgb '#000000' lt 1
+set style line 12 lc rgb '#586e75' lt 0 lw 1
+set style line 11 lc rgb "#586e75" lt 1
+
+set grid back ls 12
+set border 3 back ls 11
 
 set term png size 2400,2400 font ",8"
 set yrange[129:0]
