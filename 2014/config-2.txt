@@ -1,0 +1,5 @@
+10000
+teams.txt
+week2.txt
+rankings-2014-week2.txt
+plot-2014-week2.txt

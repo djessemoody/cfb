@@ -1,0 +1,5 @@
+10000
+teams.txt
+week13.txt
+rankings-2014-week13.txt
+plot-2014-week13.txt

@@ -313,9 +313,10 @@ int main(int argc, char *argv[])
 	oFS.open(plotfile.c_str());
 
 	i = 1;
+	oFS << setprecision(3);
 	for (map<double,string>::iterator it=avgRankSorted.begin(); it != avgRankSorted.end(); ++it) 
 	{
-		oFS << i << "  " << it->first << "  " << uncertainty[it->second] << endl;
+		oFS << i << setw(25) << it->first << setw(25) << uncertainty[it->second] << setw(25) << "\"" << i << ". " << it->second << " (" << it->first << ")\"" << endl;
 		i++;
 	}
 

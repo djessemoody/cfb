@@ -1,0 +1,5 @@
+10000
+teams.txt
+week5.txt
+rankings-2014-week5.txt
+plot-2014-week5.txt
