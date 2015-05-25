@@ -89,10 +89,10 @@ set out "week15.png"
 plot 'plot-2014-week15.txt' u ($2+1):1:($4) w labels left, \
 	'plot-2014-week15.txt'u 2:1:3  w xe
 
-#set title "2014 Week 16"
-#set out "week16.png"
-#plot 'plot-2014-week16.txt' u ($2+1):1:($4) w labels left, \
-#	'plot-2014-week16.txt'u 2:1:3  w xe
+set title "2014 Week 16"
+set out "week16.png"
+plot 'plot-2014-week16.txt' u ($2+1):1:($4) w labels left, \
+	'plot-2014-week16.txt'u 2:1:3  w xe
 
 set yrange[26:0]
 unset xrange
