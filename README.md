@@ -31,7 +31,7 @@ losses are counted in the algorithm (see below). It is designed in such a way
 that strength of schedule is inherit, since losing to a lower ranked team causes
 one to fall, and beating a higher ranked team causes one to rise. The
 uncertainty analysis used allows one to see when error bars of a team's score
-(it's rank) overlap, which indicate a statistical tie. Earlier weeks in a season
+(its rank) overlap, which indicate a statistical tie. Earlier weeks in a season
 will result in a ranking where almost all teams are tied. After a few weeks
 teams tend to group together. Eventually a few teams set themselves apart, and
 the algorithm becomes more accurate as more data (more weeks of play) comes in.
