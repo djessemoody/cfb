@@ -25,14 +25,13 @@ to get the team's current score.
 
 1. A preseason ranking of all FBS teams is randomly generated. 
 2. Win/losses are read in for each week thus far in the season. 
-3. Teams are then ranked for this iteration based on the following:
-* If a team wins against a lower ranked team, nothing happens. 
-* If a team wins against a higher ranked team, the higher team moves down and the lower teams moves up. The
-higher team moves down the difference in ranks divided by 4; the lower team moves
-up the difference in rank divided by 4. In both cases they can't move more than
-25 spots per win/loss. 
-* If a team loses to an FCS team they go to the bottom that
-week. 
+3. Teams are then ranked for this iteration based on the following. If a team
+   wins against a lower ranked team, nothing happens.  If a team wins against a
+higher ranked team, the higher team moves down and the lower teams moves up. The
+higher team moves down the difference in ranks divided by 4; the lower team
+moves up the difference in rank divided by 4. In both cases they can't move more
+than 25 spots per win/loss. If a team loses to an FCS team they go to the bottom
+that week. 
 4. After the above movement occurs for all weeks, the rankings for this
    iteration are saved.
 
