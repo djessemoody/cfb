@@ -1,3 +1,7 @@
+![Week 13 Top 25](img/week13-top25.png)
+
+[Graph of all teams](img/week13.png)
+
  Rank | Team                           | Score      | Uncertainty
 ------|--------------------------------|------------|------------
     1 | Alabama                   |  19.775200 |   0.215987

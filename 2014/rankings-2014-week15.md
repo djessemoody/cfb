@@ -1,3 +1,7 @@
+![Week 15 Top 25](img/week15-top25.png)
+
+[Graph of all teams](img/week15.png)
+
  Rank | Team                           | Score      | Uncertainty
 ------|--------------------------------|------------|------------
     1 | Alabama                   |  14.928800 |   0.187157

@@ -1,3 +1,7 @@
+![Week 8 Top 25](img/week8-top25.png)
+
+[Graph of all teams](img/week8.png)
+
  Rank | Team                           | Score      | Uncertainty
 ------|--------------------------------|------------|------------
     1 | Mississippi State         |  26.283000 |   0.240248

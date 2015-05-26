@@ -1,3 +1,7 @@
+![Week 9 Top 25](img/week9-top25.png)
+
+[Graph of all teams](img/week9.png)
+
  Rank | Team                           | Score      | Uncertainty
 ------|--------------------------------|------------|------------
     1 | Mississippi State         |  23.968600 |   0.211661

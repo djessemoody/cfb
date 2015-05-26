@@ -1,3 +1,7 @@
+![Week 10 Top 25](img/week10-top25.png)
+
+[Graph of all teams](img/week10.png)
+
  Rank | Team                           | Score      | Uncertainty
 ------|--------------------------------|------------|------------
     1 | Mississippi State         |  20.772700 |   0.216075

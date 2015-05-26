@@ -1,3 +1,7 @@
+![Week 7 Top 25](img/week7-top25.png)
+
+[Graph of all teams](img/week7.png)
+
  Rank | Team                           | Score      | Uncertainty
 ------|--------------------------------|------------|------------
     1 | Mississippi State         |  27.557500 |   0.237466

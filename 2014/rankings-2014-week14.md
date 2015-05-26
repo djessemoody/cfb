@@ -1,3 +1,7 @@
+![Week 14 Top 25](img/week13-top24.png)
+
+[Graph of all teams](img/week14.png)
+
  Rank | Team                           | Score      | Uncertainty
 ------|--------------------------------|------------|------------
     1 | Alabama                   |  16.716300 |   0.201449

@@ -1,3 +1,7 @@
+![Week 2 Top 25](img/week2-top25.png)
+
+[Graph of all teams](img/week2.png)
+
  Rank | Team                           | Score      | Uncertainty
 ------|--------------------------------|------------|------------
     1 | Arizona                   |  50.863400 |   0.398101

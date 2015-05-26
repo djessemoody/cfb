@@ -1,3 +1,7 @@
+![Week 12 Top 25](img/week12-top25.png)
+
+[Graph of all teams](img/week12.png)
+
  Rank | Team                           | Score      | Uncertainty
 ------|--------------------------------|------------|------------
     1 | Alabama                   |  22.330800 |   0.224569

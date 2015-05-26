@@ -1,3 +1,7 @@
+![Week 3 Top 25](img/week3-top25.png)
+
+[Graph of all teams](img/week3.png)
+
  Rank | Team                           | Score      | Uncertainty
 ------|--------------------------------|------------|------------
     1 | Oklahoma                  |  44.810400 |   0.331626

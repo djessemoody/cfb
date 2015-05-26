@@ -1,3 +1,7 @@
+![Week 6 Top 25](img/week6-top25.png)
+
+[Graph of all teams](img/week6.png)
+
  Rank | Team                           | Score      | Uncertainty
 ------|--------------------------------|------------|------------
     1 | Mississippi State         |  32.299200 |   0.260493

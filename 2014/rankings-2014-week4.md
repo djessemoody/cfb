@@ -1,3 +1,7 @@
+![Week 4 Top 25](img/week4-top25.png)
+
+[Graph of all teams](img/week4.png)
+
  Rank | Team                           | Score      | Uncertainty
 ------|--------------------------------|------------|------------
     1 | Mississippi State         |  39.905900 |   0.254259

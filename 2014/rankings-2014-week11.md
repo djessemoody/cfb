@@ -1,3 +1,7 @@
+![Week 11 Top 25](img/week11-top25.png)
+
+[Graph of all teams](img/week11.png)
+
  Rank | Team                           | Score      | Uncertainty
 ------|--------------------------------|------------|------------
     1 | Mississippi State         |  19.913100 |   0.231963

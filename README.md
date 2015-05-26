@@ -2,8 +2,26 @@
 
 ##Rankings
 
-This is a simple algorithm I developed for ranking college football teams. 
-2014 rankings for each week are [here](https://github.com/wesbarnett/cfb/blob/master/2014/README.md).
+This is a simple algorithm I developed for ranking college football teams.
+
+###2014
+
+* [Week 16](2014/rankings-2014-week16.md)
+* [Week 15](2014/rankings-2014-week15.md)
+* [Week 14](2014/rankings-2014-week14.md)
+* [Week 13](2014/rankings-2014-week13.md)
+* [Week 12](2014/rankings-2014-week12.md)
+* [Week 11](2014/rankings-2014-week11.md)
+* [Week 10](2014/rankings-2014-week10.md)
+* [Week 9](2014/rankings-2014-week9.md)
+* [Week 8](2014/rankings-2014-week8.md)
+* [Week 7](2014/rankings-2014-week7.md)
+* [Week 6](2014/rankings-2014-week6.md)
+* [Week 5](2014/rankings-2014-week5.md)
+* [Week 4](2014/rankings-2014-week4.md)
+* [Week 3](2014/rankings-2014-week3.md)
+* [Week 2](2014/rankings-2014-week2.md)
+* [Week 1](2014/rankings-2014-week1.md)
 
 ##About
 
