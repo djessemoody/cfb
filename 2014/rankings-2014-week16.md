@@ -1,4 +1,5 @@
 ![Week 16 Top 25](week16-top25.png)
+
 [Graph of all teams](week16.png)
 
  Rank | Team                           | Score      | Uncertainty

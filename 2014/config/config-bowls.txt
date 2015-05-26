@@ -1,0 +1,5 @@
+10000
+teams.txt
+bowls.txt
+rankings-2014-bowls.txt
+plot-2014-bowls.txt

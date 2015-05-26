@@ -1,3 +1,7 @@
+![Week 1 Top 25](img/week1-top25.png)
+
+[Graph of all teams](img/week1.png)
+
  Rank | Team                           | Score      | Uncertainty
 ------|--------------------------------|------------|------------
     1 | Auburn                    |  56.265900 |   0.326640
