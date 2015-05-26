@@ -300,8 +300,8 @@ int main(int argc, char *argv[])
 	// Reference:
 	// http://stackoverflow.com/questions/110157/how-to-retrieve-all-keys-or-values-from-a-stdmap
 	i = 1;
-	oFS << " Rank | Team                           | Score      | Uncertainty" << endl;
-	oFS << "------|--------------------------------|------------|------------" << endl;
+	oFS << " Rank | Team                       | Score      | Uncertainty" << endl;
+	oFS << "------|----------------------------|------------|------------" << endl;
 	for (map<double,string>::iterator it=avgRankSorted.begin(); it != avgRankSorted.end(); ++it) 
 	{
 		oFS << right << setw(5) << i << " | " << setw(25) << left << it->second << " | " << right << setw(10) << it->first << " | " << right << setw(10) << uncertainty[it->second] << endl;
