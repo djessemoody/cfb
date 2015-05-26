@@ -1,8 +1,8 @@
 #CFB Rankings
 
-##Rankings
-
 This is a simple algorithm I developed for ranking college football teams.
+
+##Rankings
 
 ###2014
 
