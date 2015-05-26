@@ -1,4 +1,4 @@
-![Week 14 Top 25](img/week13-top24.png)
+![Week 14 Top 25](img/week14-top25.png)
 
 [Graph of all teams](img/week14.png)
 
