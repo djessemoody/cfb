@@ -1,3 +1,5 @@
+<LINK href="../style.css" rel="stylesheet" type="text/css">
+
 ![Week 16 Top 25](img/week16-top25.png)
 
 [Graph of all teams](img/week16.png)
