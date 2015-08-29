@@ -51,6 +51,7 @@ int main(int argc, char *argv[])
 	bool winnerIsFBS;
 	bool loserIsFBS;
 	double offset;
+	double score;
 	ifstream iFS;
 	int i;
 	int j;
@@ -254,43 +255,67 @@ int main(int argc, char *argv[])
 			 * up higher than number 1, and you can't be lower than the number of
 			 * teams. If the team you beat is just above you, you switch spots.
 			 * If you play an FCS team and lose you go to the bottom. After all
-			 * of that, shift the other teams around the movement.
+			 * of that, shift the other teams around the movement. It's a little
+			 * counterintuitive here - ranks that are numerically lower are
+			 * better ranks, and ranks that are numerically higher, are worse
+			 * ranks.
 			 */
 			if (winnerIsFBS && loserIsFBS && winnerRank > loserRank) 
 			{
+				// Determine the offset that will be used to move the teams
 				offset = (winnerRank - loserRank) / movementFactor;
+
+				// Can only move so far
 				if (offset > maxOffset)
 				{	
 					offset = maxOffset;
 				}
-				tmpWinner = teams.at(winnerRank);
-				tmpLoser = teams.at(loserRank);
+
+				// Initial shift
 				newLoserRank = (loserRank + offset);
 				newWinnerRank = (winnerRank - offset);
-				if (newWinnerRank < 1) 
+
+				// If the winner is ranked higher than the number one spot, then
+				// move it down to number one.
+				if (newWinnerRank < 0) 
 				{ 
-					newWinnerRank = 1;
+					newWinnerRank = 0;
 				}
-				if (newLoserRank > NTEAMS) 
+				
+				// If the loser is ranked lower than the possible number of
+				// teams, move it up to last place.
+				if (newLoserRank > NTEAMS-1) 
 				{ 
-					newLoserRank = NTEAMS;
+					newLoserRank = NTEAMS-1;
 				}
+
+				// If somehow they are ranked the same, the loser moves down one
+				// spot
 				if (newWinnerRank == newLoserRank) 
 				{ 
 					newWinnerRank = newLoserRank + 1;
 				}
+
+				// Now move the other teams around. Because the new winner moved
+				// up, the teams that are no below it have to move down in rank
+				// by 1.
 				for (k = winnerRank-1; k >= newWinnerRank; k--) 
 				{
 					teams.at(k+1) = teams.at(k);
 				}
+
+				// Because the new loser moved down in rank, the teams around it
+				// have to move up in rank by 1.
 				for (k = loserRank+1; k <= newLoserRank; k++) 
 				{
-				teams.at(k-1) = teams.at(k);
+					teams.at(k-1) = teams.at(k);
 				}
-				teams.at(newLoserRank) = tmpLoser;
-				teams.at(newWinnerRank) = tmpWinner;
+
+				// Now we can put the winner and loser in their new spots
+				teams.at(newLoserRank) = losers.at(record);
+				teams.at(newWinnerRank) = winners.at(record);
 			}
-			if ((not winnerIsFBS) && loserIsFBS) 
+			else if ((not winnerIsFBS) && loserIsFBS) 
 			{
 				for (k = loserRank+1 ; k < NTEAMS; k++) 
 				{
@@ -304,8 +329,9 @@ int main(int argc, char *argv[])
 		// Save the results from this permutation
 		for (j = 0; j < NTEAMS; j++) 
 		{
-			avgRank[teams.at(j)] += j;
-			ranks_all.at(i).at(teams.at(j)) += j;
+			score = 1.0 - (double)j/(double)NTEAMS;
+			avgRank[teams.at(j)] += score;
+			ranks_all.at(i).at(teams.at(j)) += score;
 		}
 		
 	}
@@ -333,16 +359,16 @@ map <string, double> bootstrap_uncertainty(int NTEAMS, int bootstrap_n, int NRAN
 	map <string, double> ranks_bootavg;
 	map <string, double> ranks_bootvar;
 	map <string, double> uncertainty;
-	vector < map <string, double> > ranks_boot(NRAND);
+	vector < map <string, double> > ranks_boot(bootstrap_n);
 
 	// Bootstrap uncertainty calculation
 	for (int team_i = 0; team_i < NTEAMS; team_i++)
 	{
 		ranks_bootvar[teams.at(team_i)] = 0.0;
 		ranks_bootavg[teams.at(team_i)] = 0.0;
-		for (int perm_i = 0; perm_i < NRAND; perm_i++)
+		for (int boot_i = 0; boot_i < bootstrap_n; boot_i++)
 		{
-			ranks_boot.at(perm_i)[teams.at(team_i)] = 0.0;
+			ranks_boot.at(boot_i)[teams.at(team_i)] = 0.0;
 		}
 	}
 
@@ -396,28 +422,36 @@ void output(multimap<double,string> &avgRankSorted, map <string, double> &uncert
 	ofstream oFS;
 	oFS.open(outfile.c_str());
 	oFS << fixed << setprecision(6);
+	vector <string> team;
+	vector <double> score;
+	vector <double> score_uncertainty;
 
+	/* Retrieve the keys from the iterator */
 	// Reference:
 	// http://stackoverflow.com/questions/110157/how-to-retrieve-all-keys-or-values-from-a-stdmap
-	int i = 1;
-	oFS << " Rank | Team                       | Score      | Uncertainty" << endl;
-	oFS << "------|----------------------------|------------|------------" << endl;
 	for (map<double,string>::iterator it=avgRankSorted.begin(); it != avgRankSorted.end(); ++it) 
 	{
-		oFS << right << setw(5) << i << " | " << setw(25) << left << it->second << " | " << right << setw(10) << it->first << " | " << right << setw(10) << uncertainty[it->second] << endl;
-		i++;
+		team.push_back(it->second);
+		score.push_back(it->first);
+		score_uncertainty.push_back(uncertainty[it->second]);
+	}
+
+	/* Cycle through them in reverse */
+	oFS << " Rank | Team                       | Score      | Uncertainty" << endl;
+	oFS << "------|----------------------------|------------|------------" << endl;
+	for (int i = team.size()-1; i >= 0; i--)
+	{
+		oFS << right << setw(5) << team.size()-i << " | " << setw(25) << left << team.at(i) << " | " << right << setw(10) << score.at(i) << " | " << right << setw(10) << score_uncertainty.at(i) << endl;
 	}
 
 	oFS.close();
 
 	oFS.open(plotfile.c_str());
 
-	i = 1;
 	oFS << setprecision(3);
-	for (map<double,string>::iterator it=avgRankSorted.begin(); it != avgRankSorted.end(); ++it) 
+	for (int i = team.size()-1; i >= 0; i--)
 	{
-		oFS << i << setw(25) << it->first << setw(25) << uncertainty[it->second] << setw(25) << "\"" << i << ". " << it->second << " (" << it->first << ")\"" << endl;
-		i++;
+		oFS << team.size()-i << setw(25) << score.at(i) << setw(25) << score_uncertainty.at(i) << setw(25) << "\"" << team.size()-i << ". " << team.at(i) << " (" << score.at(i) << ")\"" << endl;
 	}
 
 	oFS.close();
