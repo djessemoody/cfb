@@ -49,6 +49,8 @@ int main(int argc, char *argv[])
 	bool loserIsFBS;
 	double offset;
 	ifstream iFS;
+	int frame;
+	int frame_i;
 	int i;
 	int j;
 	int k;
@@ -112,6 +114,7 @@ int main(int argc, char *argv[])
 		for (i = 0; i < NRAND; i++)
 		{
 			ranks_all.at(i)[team] = 0.0;
+			ranks_boot.at(i)[team] = 0.0;
 		}
 	}
 
@@ -296,6 +299,10 @@ map <string, double> bootstrap_uncertainty(int NTEAMS, int bootstrap_n, int NRAN
 	{
 		ranks_bootvar[teams.at(j)] = 0.0;
 		ranks_bootavg[teams.at(j)] = 0.0;
+		for (int i = 0; i < NRAND; i++)
+		{
+			ranks_boot.at(i)[teams.at(j)] = 0.0;
+		}
 	}
 	for (int i = 0; i < bootstrap_n; i++)
 	{
