@@ -454,7 +454,7 @@ void output(multimap<double,string> &avgRankSorted, map <string, double> &uncert
 	oFS << setprecision(3);
 	for (int i = team.size()-1; i >= 0; i--)
 	{
-		oFS << team.size()-i << setw(25) << score.at(i) << setw(25) << score_uncertainty.at(i) << setw(25) << "\"" << team.size()-i << ". " << team.at(i) << " (" << score.at(i) << ")\"" << endl;
+		oFS << team.size()-i << setw(20) << score.at(i) << setw(20) << score_uncertainty.at(i) << setw(20) << "\"" << team.size()-i << ". " << team.at(i) << " (" << score.at(i) << ")\"" << endl;
 	}
 
 	oFS.close();
