@@ -296,7 +296,7 @@ int main(int argc, char *argv[])
 				{
 					teams.at(k-1) = teams.at(k);
 				}
-				teams.at(NTEAMS-1) = loser;
+				teams.at(NTEAMS-1) = losers.at(record);
 			}
 
 		}
