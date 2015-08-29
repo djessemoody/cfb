@@ -44,23 +44,16 @@ int main(int argc, char *argv[])
 	  */
 	const double movementFactor = 4.0;
 	const int maxOffset = 25;
-	const int AVGS = 0;
-	const int STDDEVS = 1;
-	const int NRUNS = 2;
 	int NRAND;
-	int NTEAMS;
 	bool winnerIsFBS;
 	bool loserIsFBS;
 	double offset;
-	double toppoints;
 	ifstream iFS;
 	int frame;
 	int frame_i;
 	int i;
 	int j;
 	int k;
-	int l;
-	int x;
 	int loserRank;
 	int newLoserRank;
 	int newWinnerRank;
@@ -84,6 +77,8 @@ int main(int argc, char *argv[])
 	string tmpWinner;
 	string tmp;
 	vector <string> teams;
+	vector <string> winners;
+	vector <string> losers;
 
 	if (argc != 2) 
 	{
@@ -128,9 +123,30 @@ int main(int argc, char *argv[])
 
 	iFS.close();
 
-	NTEAMS = teams.size();
-
+	const int NTEAMS = teams.size();
 	cout << "Number of teams: " << NTEAMS << endl;
+
+	/* Read in and store win-loss records. */
+	while (!iFS.eof()) 
+	{
+
+		/* Read in this record. Record is always winner first, then loser,
+		* then a blank line. */
+		getline(iFS,winner);
+		getline(iFS,loser);
+		getline(iFS,space);
+		if (iFS.eof()) 
+		{	
+			break;
+		}
+		winners.push_back(winner);
+		losers.push_back(loser);
+	}
+
+	iFS.close();
+
+	const int NRECORDS = winners.size();
+	cout << "Number of games: " << NRECORDS << endl;
 
 	for (i = 0; i < NRAND; i++) 
 	{
@@ -139,30 +155,23 @@ int main(int argc, char *argv[])
 
 		random_shuffle(teams.begin(), teams.end());
 
-		iFS.open(winslossfile.c_str());
-
-		while (!iFS.eof()) 
+		for (int record = 0; record < NRECORDS; record++)
 		{
 
-			getline(iFS,winner);
-			getline(iFS,loser);
-			getline(iFS,space);
-			if (iFS.eof()) 
-			{	
-				break;
-			}
-
+			/* Find out the rank of the winner and loser in this random
+			 * permutation. Also find out if the winner and loser are both FBS
+			 * teams. */
 			winnerIsFBS = false;
 			loserIsFBS = false;
-			for (j = 0; j < teams.size(); j++) 
+			for (j = 0; j < NTEAMS; j++) 
 			{
 
-				if (teams.at(j) == winner) 
+				if (teams.at(j) == winners.at(record)) 
 				{
 					winnerRank = j; 
 					winnerIsFBS = true;
 				}
-				if (teams.at(j) == loser) 
+				if (teams.at(j) == losers.at(record)) 
 				{
 					loserRank = j;
 					loserIsFBS = true;
@@ -220,19 +229,17 @@ int main(int argc, char *argv[])
 			}
 			if ((not winnerIsFBS) && loserIsFBS) 
 			{
-				for (k = loserRank+1 ; k < teams.size(); k++) 
+				for (k = loserRank+1 ; k < NTEAMS; k++) 
 				{
 					teams.at(k-1) = teams.at(k);
 				}
-				teams.at(teams.size()-1) = loser;
+				teams.at(NTEAMS-1) = loser;
 			}
 
 		}
 
-		iFS.close();
-
 		// Save the results from this permutation
-		for (j = 0; j < teams.size(); j++) 
+		for (j = 0; j < NTEAMS; j++) 
 		{
 			avgRank[teams.at(j)] += j;
 			ranks_all.at(i).at(teams.at(j)) += j;
@@ -241,13 +248,13 @@ int main(int argc, char *argv[])
 	}
 
 	// Normalization
-	for (i = 0; i < teams.size(); i++) 
+	for (i = 0; i < NTEAMS; i++) 
 	{
 		avgRank[teams.at(i)] /= (double)NRAND;
 	}
 
 	// Bootstrap uncertainty calculation
-	for (j = 0; j < teams.size(); j++)
+	for (j = 0; j < NTEAMS; j++)
 	{
 		ranks_bootvar[teams.at(j)] = 0.0;
 		ranks_bootavg[teams.at(j)] = 0.0;
@@ -260,32 +267,32 @@ int main(int argc, char *argv[])
 		{
 			frame = rand() % NRAND;
 
-			for (j = 0; j < teams.size(); j++)
+			for (j = 0; j < NTEAMS; j++)
 			{
 				ranks_boot.at(i).at(teams.at(j)) += ranks_all.at(frame).at(teams.at(j));
 			}
 		}
-		for (j = 0; j < teams.size(); j++)
+		for (j = 0; j < NTEAMS; j++)
 		{
 			ranks_boot.at(i).at(teams.at(j)) /= (double)NRAND;
 			ranks_bootavg[teams.at(j)] += ranks_boot.at(i).at(teams.at(j));
 		}
 	}
 
-	for (j = 0; j < teams.size(); j++)
+	for (j = 0; j < NTEAMS; j++)
 	{
 		ranks_bootavg[teams.at(j)] /= (double) bootstrap_n;
 	}
 
 	for (i = 0; i < bootstrap_n; i++)
 	{
-		for (j = 0; j < teams.size(); j++)
+		for (j = 0; j < NTEAMS; j++)
 		{
 			ranks_bootvar[teams.at(j)] += pow(ranks_bootavg[teams.at(j)] - ranks_boot.at(i).at(teams.at(j)),2);
 		}
 	}
 
-	for (j = 0; j < teams.size(); j++)
+	for (j = 0; j < NTEAMS; j++)
 	{
 		ranks_bootvar[teams.at(j)] /= (double) (bootstrap_n - 1);
 		uncertainty[teams.at(j)] = sqrt(ranks_bootvar[teams.at(j)]);
