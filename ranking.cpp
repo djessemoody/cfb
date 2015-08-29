@@ -31,7 +31,7 @@ std::multimap<B,A> flip_map(const std::map<A,B> &src)
 }
 
 map <string, double> bootstrap_uncertainty(int NTEAMS, int bootstrap_n, int NRAND, vector <string> &teams,vector < map <string, double> > &ranks_all);
-void output(multimap<double,string> &avgRankSorted, map <string, double> &uncertainty, string outfile, string plotfile);
+void output(multimap<double,string> &avgRankSorted, map <string, double> &uncertainty, string outfile, string plotfile, string plotfile25);
 
 int main(int argc, char *argv[]) 
 {
@@ -43,9 +43,9 @@ int main(int argc, char *argv[])
 	  * incentive for teams that lose alot to have a couple of wins and be
 	  * highly ranked).
 	  */
-	const int bootstrap_n = 50;
-	const double movementFactor = 4.0;
-	const int maxOffset = 25;
+	int bootstrap_n;
+	double movementFactor;
+	int maxOffset;
 	int NRAND;
 	bool alreadyDone;
 	bool winnerIsFBS;
@@ -72,6 +72,7 @@ int main(int argc, char *argv[])
 	string winslossfile;
 	string outfile;
 	string plotfile;
+	string plotfile25;
 	string teamsfile;
 	string tmpLoser;
 	string tmpWinner;
@@ -93,13 +94,20 @@ int main(int argc, char *argv[])
 
 	iFS.open(configfile.c_str());
 	iFS >> NRAND;
+	iFS >> bootstrap_n;
+	iFS >> movementFactor;
+	iFS >> maxOffset;
 	iFS >> teamsfile;
 	iFS >> winslossfile;
 	iFS >> outfile;
 	iFS >> plotfile;
+	iFS >> plotfile25;
 	iFS.close();
 
 	cout << "Random permutations to perform: " << NRAND << endl;
+	cout << "Number of bootstrap iterations: " << bootstrap_n << endl;
+	cout << "Movement factor: " << movementFactor << endl;
+	cout << "Maximum offset: " << maxOffset << endl;
 	cout << "Reading teams from: " << teamsfile << endl;
 	cout << "Reading records from: " << winslossfile << endl;
 	cout << "Ranking will be output to: " << outfile << endl;
@@ -344,7 +352,7 @@ int main(int argc, char *argv[])
 
 	avgRankSorted = flip_map(avgRank);
 	uncertainty = bootstrap_uncertainty(NTEAMS, bootstrap_n, NRAND, teams, ranks_all);
-	output(avgRankSorted, uncertainty, outfile, plotfile);
+	output(avgRankSorted, uncertainty, outfile, plotfile, plotfile25);
 
 	cout << "Ranking completed and stored in " << outfile << ". Plot data saved to " << plotfile << "." << endl;
 	cout << "Check accuracy of non-FBS teams list stored at non-FBS.txt. If FBS teams found, modify rankings input file with correct names." << endl;
@@ -420,9 +428,9 @@ map <string, double> bootstrap_uncertainty(int NTEAMS, int bootstrap_n, int NRAN
 	return uncertainty;
 }
 
-void output(multimap<double,string> &avgRankSorted, map <string, double> &uncertainty, string outfile, string plotfile)
+void output(multimap<double,string> &avgRankSorted, map <string, double> &uncertainty, string outfile, string plotfile, string plotfile25)
 {
-	ofstream oFS;
+	ofstream oFS, oFS25;
 	oFS.open(outfile.c_str());
 	oFS << fixed << setprecision(6);
 	vector <string> team;
@@ -450,14 +458,21 @@ void output(multimap<double,string> &avgRankSorted, map <string, double> &uncert
 	oFS.close();
 
 	oFS.open(plotfile.c_str());
+	oFS25.open(plotfile25.c_str());
 
 	oFS << setprecision(3);
+	oFS25 << setprecision(3);
 	for (int i = team.size()-1; i >= 0; i--)
 	{
 		oFS << team.size()-i << setw(20) << score.at(i) << setw(20) << score_uncertainty.at(i) << setw(20) << "\"" << team.size()-i << ". " << team.at(i) << " (" << score.at(i) << ")\"" << endl;
+		if (team.size()-i < 26)
+		{
+		oFS25 << team.size()-i << setw(20) << score.at(i) << setw(20) << score_uncertainty.at(i) << setw(20) << "\"" << team.size()-i << ". " << team.at(i) << " (" << score.at(i) << ")\"" << endl;
+		}
 	}
 
 	oFS.close();
+	oFS25.close();
 
 	return;
 }
