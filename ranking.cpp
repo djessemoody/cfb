@@ -49,8 +49,6 @@ int main(int argc, char *argv[])
 	bool loserIsFBS;
 	double offset;
 	ifstream iFS;
-	int frame;
-	int frame_i;
 	int i;
 	int j;
 	int k;
@@ -60,8 +58,6 @@ int main(int argc, char *argv[])
 	int winnerRank;
 	map <string, double> avgRank;
 	map <string, double> uncertainty;
-	map <string, double> ranks_bootavg;
-	map <string, double> ranks_bootvar;
 	multimap<double,string> avgRankSorted;
 	ofstream oFS;
 	string configfile;
@@ -104,7 +100,6 @@ int main(int argc, char *argv[])
 	cout << "Ranking will be output to: " << outfile << endl;
 	cout << "Plot file is: " << plotfile << endl;
 
-	vector < map <string, double> > ranks_boot(NRAND);
 	vector < map <string, double> > ranks_all(NRAND);
 
 	iFS.open(teamsfile.c_str());
@@ -117,7 +112,6 @@ int main(int argc, char *argv[])
 		for (i = 0; i < NRAND; i++)
 		{
 			ranks_all.at(i)[team] = 0.0;
-			ranks_boot.at(i)[team] = 0.0;
 		}
 	}
 
@@ -253,50 +247,6 @@ int main(int argc, char *argv[])
 		avgRank[teams.at(i)] /= (double)NRAND;
 	}
 
-	// Bootstrap uncertainty calculation
-	for (j = 0; j < NTEAMS; j++)
-	{
-		ranks_bootvar[teams.at(j)] = 0.0;
-		ranks_bootavg[teams.at(j)] = 0.0;
-	}
-	for (i = 0; i < bootstrap_n; i++)
-	{
-		cout << i << endl;
-
-		for (frame_i = 0; frame_i < NRAND; frame_i++)
-		{
-			frame = rand() % NRAND;
-
-			for (j = 0; j < NTEAMS; j++)
-			{
-				ranks_boot.at(i).at(teams.at(j)) += ranks_all.at(frame).at(teams.at(j));
-			}
-		}
-		for (j = 0; j < NTEAMS; j++)
-		{
-			ranks_boot.at(i).at(teams.at(j)) /= (double)NRAND;
-			ranks_bootavg[teams.at(j)] += ranks_boot.at(i).at(teams.at(j));
-		}
-	}
-
-	for (j = 0; j < NTEAMS; j++)
-	{
-		ranks_bootavg[teams.at(j)] /= (double) bootstrap_n;
-	}
-
-	for (i = 0; i < bootstrap_n; i++)
-	{
-		for (j = 0; j < NTEAMS; j++)
-		{
-			ranks_bootvar[teams.at(j)] += pow(ranks_bootavg[teams.at(j)] - ranks_boot.at(i).at(teams.at(j)),2);
-		}
-	}
-
-	for (j = 0; j < NTEAMS; j++)
-	{
-		ranks_bootvar[teams.at(j)] /= (double) (bootstrap_n - 1);
-		uncertainty[teams.at(j)] = sqrt(ranks_bootvar[teams.at(j)]);
-	}
 
 	avgRankSorted = flip_map(avgRank);
 
@@ -330,4 +280,61 @@ int main(int argc, char *argv[])
 	oFS.close();
 
 	return 0;
+}
+
+map <string, double> bootstrap_uncertainty(int NTEAMS, int bootstrap_n, int NRAND, vector <string> teams,vector < map <string, double> > ranks_all)
+{
+
+	int frame;
+	map <string, double> ranks_bootavg;
+	map <string, double> ranks_bootvar;
+	map <string, double> uncertainty;
+	vector < map <string, double> > ranks_boot(NRAND);
+
+	// Bootstrap uncertainty calculation
+	for (int j = 0; j < NTEAMS; j++)
+	{
+		ranks_bootvar[teams.at(j)] = 0.0;
+		ranks_bootavg[teams.at(j)] = 0.0;
+	}
+	for (int i = 0; i < bootstrap_n; i++)
+	{
+		cout << i << endl;
+
+		for (int frame_i = 0; frame_i < NRAND; frame_i++)
+		{
+			frame = rand() % NRAND;
+
+			for (int j = 0; j < NTEAMS; j++)
+			{
+				ranks_boot.at(i).at(teams.at(j)) += ranks_all.at(frame).at(teams.at(j));
+			}
+		}
+		for (int j = 0; j < NTEAMS; j++)
+		{
+			ranks_boot.at(i).at(teams.at(j)) /= (double)NRAND;
+			ranks_bootavg[teams.at(j)] += ranks_boot.at(i).at(teams.at(j));
+		}
+	}
+
+	for (int j = 0; j < NTEAMS; j++)
+	{
+		ranks_bootavg[teams.at(j)] /= (double) bootstrap_n;
+	}
+
+	for (int i = 0; i < bootstrap_n; i++)
+	{
+		for (int j = 0; j < NTEAMS; j++)
+		{
+			ranks_bootvar[teams.at(j)] += pow(ranks_bootavg[teams.at(j)] - ranks_boot.at(i).at(teams.at(j)),2);
+		}
+	}
+
+	for (int j = 0; j < NTEAMS; j++)
+	{
+		ranks_bootvar[teams.at(j)] /= (double) (bootstrap_n - 1);
+		uncertainty[teams.at(j)] = sqrt(ranks_bootvar[teams.at(j)]);
+	}
+
+	return uncertainty;
 }
