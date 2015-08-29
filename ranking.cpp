@@ -77,6 +77,7 @@ int main(int argc, char *argv[])
 	vector <string> teams;
 	vector <string> winners;
 	vector <string> losers;
+	vector <string> nonFBSteams;
 
 	if (argc != 2) 
 	{
@@ -123,6 +124,7 @@ int main(int argc, char *argv[])
 	cout << "Number of teams: " << NTEAMS << endl;
 
 	/* Read in and store win-loss records. */
+	iFS.open(winslossfile.c_str());
 	while (!iFS.eof()) 
 	{
 
@@ -137,12 +139,48 @@ int main(int argc, char *argv[])
 		}
 		winners.push_back(winner);
 		losers.push_back(loser);
+
+		/* Check if winner and loser are FBS teams or not */
+		winnerIsFBS = false;
+		for (i = 0; i < NTEAMS; i++)
+		{
+			if (winner == teams.at(i))
+			{
+				winnerIsFBS = true;
+				break;
+			}
+		}
+		if (!winnerIsFBS)
+		{
+			nonFBSteams.push_back(winner);
+		}
+		loserIsFBS= false;
+		for (i = 0; i < NTEAMS; i++)
+		{
+			if (loser == teams.at(i))
+			{
+				loserIsFBS = true;
+				break;
+			}
+		}
+		if (!loserIsFBS)
+		{
+			nonFBSteams.push_back(loser);
+		}
 	}
 
 	iFS.close();
 
+
 	const int NRECORDS = winners.size();
 	cout << "Number of games: " << NRECORDS << endl;
+
+	const int NNONFBS = nonFBSteams.size();
+	cout << "The following have been determined to be non-FBS teams. CHECK FOR ACCURACY: ";
+	for (i = 0; i < NNONFBS; i++)
+	{
+		cout << nonFBSteams.at(i) << endl;
+	}
 
 	for (i = 0; i < NRAND; i++) 
 	{
@@ -256,7 +294,7 @@ int main(int argc, char *argv[])
 	return 0;
 }
 
-map <string, double> bootstrap_uncertainty(int NTEAMS, int bootstrap_n, int NRAND, vector <string> teams,vector < map <string, double> > ranks_all)
+map <string, double> bootstrap_uncertainty(int NTEAMS, int bootstrap_n, int NRAND, vector <string> &teams,vector < map <string, double> > &ranks_all)
 {
 
 	int perm;
@@ -288,7 +326,7 @@ map <string, double> bootstrap_uncertainty(int NTEAMS, int bootstrap_n, int NRAN
 
 			for (int team_i = 0; team_i < NTEAMS; team_i++)
 			{
-				ranks_boot.at(boot_i).at(teams.at(team_i)) += ranks_all.at(perm_i).at(teams.at(team_i));
+				ranks_boot.at(boot_i).at(teams.at(team_i)) += ranks_all.at(perm).at(teams.at(team_i));
 			}
 		}
 
