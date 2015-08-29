@@ -47,6 +47,7 @@ int main(int argc, char *argv[])
 	const double movementFactor = 4.0;
 	const int maxOffset = 25;
 	int NRAND;
+	bool alreadyDone;
 	bool winnerIsFBS;
 	bool loserIsFBS;
 	double offset;
@@ -152,7 +153,20 @@ int main(int argc, char *argv[])
 		}
 		if (!winnerIsFBS)
 		{
-			nonFBSteams.push_back(winner);
+			alreadyDone = false;
+			for (i = 0; i < nonFBSteams.size(); i++)
+			{
+				if (winner == nonFBSteams.at(i))
+				{
+					alreadyDone = true;
+					break;
+				}
+			}
+
+			if (!alreadyDone)
+			{
+				nonFBSteams.push_back(winner);
+			}
 		}
 		loserIsFBS= false;
 		for (i = 0; i < NTEAMS; i++)
@@ -165,7 +179,20 @@ int main(int argc, char *argv[])
 		}
 		if (!loserIsFBS)
 		{
-			nonFBSteams.push_back(loser);
+			alreadyDone = false;
+			for (i = 0; i < nonFBSteams.size(); i++)
+			{
+				if (loser == nonFBSteams.at(i))
+				{
+					alreadyDone = true;
+					break;
+				}
+			}
+
+			if (!alreadyDone)
+			{
+				nonFBSteams.push_back(loser);
+			}
 		}
 	}
 
@@ -176,11 +203,13 @@ int main(int argc, char *argv[])
 	cout << "Number of games: " << NRECORDS << endl;
 
 	const int NNONFBS = nonFBSteams.size();
-	cout << "The following have been determined to be non-FBS teams. CHECK FOR ACCURACY: ";
+	oFS.open("nonFBS.txt");
+	oFS << "The following have been determined to be non-FBS teams. CHECK FOR ACCURACY: " << endl;
 	for (i = 0; i < NNONFBS; i++)
 	{
-		cout << nonFBSteams.at(i) << endl;
+		oFS << nonFBSteams.at(i) << endl;
 	}
+	oFS.close();
 
 	for (i = 0; i < NRAND; i++) 
 	{
@@ -290,6 +319,9 @@ int main(int argc, char *argv[])
 	avgRankSorted = flip_map(avgRank);
 	uncertainty = bootstrap_uncertainty(NTEAMS, bootstrap_n, NRAND, teams, ranks_all);
 	output(avgRankSorted, uncertainty, outfile, plotfile);
+
+	cout << "Ranking completed and stored in " << outfile << ". Plot data saved to " << plotfile << "." << endl;
+	cout << "Check accuracy of non-FBS teams list stored at non-FBS.txt. If FBS teams found, modify rankings input file with correct names." << endl;
 
 	return 0;
 }
