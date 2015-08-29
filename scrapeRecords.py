@@ -81,6 +81,9 @@ def doScraping(f,year,week):
 	schedtree = html.fromstring(schedpage.text)
 	schedteams = schedtree.xpath('//div[@class="team"]//a/text()')
 	finalscores = schedtree.xpath('//td[@class="final score"]/text()')
+        if len(finalscores) == 0:
+            print "No scores for week " + week
+            return
 	gameStatus = schedtree.xpath('//div[starts-with(@class,"game-status")]/text()')
 
 	schedteams = fixTeamNames(schedteams)
@@ -96,11 +99,11 @@ def doScraping(f,year,week):
 				f.write(schedteams[y].rstrip()+'\n\n')
 			x += 2
 
-thisweek = 14;
-year = 2014;
-f = open("bowls.txt","w")
-#for week in range(1,thisweek+1):
-#doScraping(f,year,str(15))
-doScraping(f,year,"P")
+thisweek = 15;
+year = 2015;
+f = open("winslosses.txt","w")
+for week in range(1,thisweek+1):
+    doScraping(f,year,str(week))
+#doScraping(f,year,"P")
 
 f.close();

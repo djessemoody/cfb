@@ -1,0 +1,9 @@
+1000
+10
+4.0
+25
+teams.txt
+2014.txt
+rankings-2014.txt
+plot-2014.txt
+plot-2014-top25.txt
