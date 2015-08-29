@@ -11,8 +11,6 @@
 #include <iomanip>
 using namespace std;
 
-const int bootstrap_n = 50;
-
 // Reference:
 // http://stackoverflow.com/questions/5056645/sorting-stdmap-using-value
 template<typename A, typename B>
@@ -32,6 +30,9 @@ std::multimap<B,A> flip_map(const std::map<A,B> &src)
     return dst;
 }
 
+map <string, double> bootstrap_uncertainty(int NTEAMS, int bootstrap_n, int NRAND, vector <string> &teams,vector < map <string, double> > &ranks_all);
+void output(multimap<double,string> &avgRankSorted, map <string, double> &uncertainty, string outfile, string plotfile);
+
 int main(int argc, char *argv[]) 
 {
 
@@ -42,6 +43,7 @@ int main(int argc, char *argv[])
 	  * incentive for teams that lose alot to have a couple of wins and be
 	  * highly ranked).
 	  */
+	const int bootstrap_n = 50;
 	const double movementFactor = 4.0;
 	const int maxOffset = 25;
 	int NRAND;
@@ -49,8 +51,6 @@ int main(int argc, char *argv[])
 	bool loserIsFBS;
 	double offset;
 	ifstream iFS;
-	int frame;
-	int frame_i;
 	int i;
 	int j;
 	int k;
@@ -114,7 +114,6 @@ int main(int argc, char *argv[])
 		for (i = 0; i < NRAND; i++)
 		{
 			ranks_all.at(i)[team] = 0.0;
-			ranks_boot.at(i)[team] = 0.0;
 		}
 	}
 
@@ -250,16 +249,87 @@ int main(int argc, char *argv[])
 		avgRank[teams.at(i)] /= (double)NRAND;
 	}
 
-
 	avgRankSorted = flip_map(avgRank);
+	uncertainty = bootstrap_uncertainty(NTEAMS, bootstrap_n, NRAND, teams, ranks_all);
+	output(avgRankSorted, uncertainty, outfile, plotfile);
 
-	oFS << fixed << setprecision(6);
+	return 0;
+}
 
+map <string, double> bootstrap_uncertainty(int NTEAMS, int bootstrap_n, int NRAND, vector <string> teams,vector < map <string, double> > ranks_all)
+{
+
+	int perm;
+	map <string, double> ranks_bootavg;
+	map <string, double> ranks_bootvar;
+	map <string, double> uncertainty;
+	vector < map <string, double> > ranks_boot(NRAND);
+
+	// Bootstrap uncertainty calculation
+	for (int team_i = 0; team_i < NTEAMS; team_i++)
+	{
+		ranks_bootvar[teams.at(team_i)] = 0.0;
+		ranks_bootavg[teams.at(team_i)] = 0.0;
+		for (int perm_i = 0; perm_i < NRAND; perm_i++)
+		{
+			ranks_boot.at(perm_i)[teams.at(team_i)] = 0.0;
+		}
+	}
+
+	for (int boot_i = 0; boot_i < bootstrap_n; boot_i++)
+	{
+		cout << boot_i << endl;
+
+		/* Randomly select one of the permutations with replacement and get the ranks of all
+		 * teams. Do this the same number of times as the original permutations. */
+		for (int perm_i = 0; perm_i < NRAND; perm_i++)
+		{
+			perm = rand() % NRAND; // TODO: better random numbers
+
+			for (int team_i = 0; team_i < NTEAMS; team_i++)
+			{
+				ranks_boot.at(boot_i).at(teams.at(team_i)) += ranks_all.at(perm_i).at(teams.at(team_i));
+			}
+		}
+
+		for (int team_i = 0; team_i < NTEAMS; team_i++)
+		{
+			ranks_boot.at(boot_i).at(teams.at(team_i)) /= (double)NRAND;
+			ranks_bootavg[teams.at(team_i)] += ranks_boot.at(boot_i).at(teams.at(team_i));
+		}
+	}
+
+	for (int team_i = 0; team_i < NTEAMS; team_i++)
+	{
+		ranks_bootavg[teams.at(team_i)] /= (double) bootstrap_n;
+	}
+
+	for (int boot_i = 0; boot_i < bootstrap_n; boot_i++)
+	{
+		for (int team_i = 0; team_i < NTEAMS; team_i++)
+		{
+			ranks_bootvar[teams.at(team_i)] += pow(ranks_bootavg[teams.at(team_i)] - ranks_boot.at(boot_i).at(teams.at(team_i)),2);
+		}
+	}
+
+	for (int team_i = 0; team_i < NTEAMS; team_i++)
+	{
+		ranks_bootvar[teams.at(team_i)] /= (double) (bootstrap_n - 1);
+		uncertainty[teams.at(team_i)] = sqrt(ranks_bootvar[teams.at(team_i)]);
+	}
+
+	return uncertainty;
+}
+
+void output(multimap<double,string> &avgRankSorted, map <string, double> &uncertainty, string outfile, string plotfile)
+{
+	ofstream oFS;
 	oFS.open(outfile.c_str());
+	oFS << fixed << setprecision(6);
 
 	// Reference:
 	// http://stackoverflow.com/questions/110157/how-to-retrieve-all-keys-or-values-from-a-stdmap
-	i = 1;
+	int i = 1;
 	oFS << " Rank | Team                       | Score      | Uncertainty" << endl;
 	oFS << "------|----------------------------|------------|------------" << endl;
 	for (map<double,string>::iterator it=avgRankSorted.begin(); it != avgRankSorted.end(); ++it) 
@@ -282,66 +352,7 @@ int main(int argc, char *argv[])
 
 	oFS.close();
 
-	return 0;
+	return;
 }
 
-map <string, double> bootstrap_uncertainty(int NTEAMS, int bootstrap_n, int NRAND, vector <string> teams,vector < map <string, double> > ranks_all)
-{
 
-	int frame;
-	map <string, double> ranks_bootavg;
-	map <string, double> ranks_bootvar;
-	map <string, double> uncertainty;
-	vector < map <string, double> > ranks_boot(NRAND);
-
-	// Bootstrap uncertainty calculation
-	for (int j = 0; j < NTEAMS; j++)
-	{
-		ranks_bootvar[teams.at(j)] = 0.0;
-		ranks_bootavg[teams.at(j)] = 0.0;
-		for (int i = 0; i < NRAND; i++)
-		{
-			ranks_boot.at(i)[teams.at(j)] = 0.0;
-		}
-	}
-	for (int i = 0; i < bootstrap_n; i++)
-	{
-		cout << i << endl;
-
-		for (int frame_i = 0; frame_i < NRAND; frame_i++)
-		{
-			frame = rand() % NRAND;
-
-			for (int j = 0; j < NTEAMS; j++)
-			{
-				ranks_boot.at(i).at(teams.at(j)) += ranks_all.at(frame).at(teams.at(j));
-			}
-		}
-		for (int j = 0; j < NTEAMS; j++)
-		{
-			ranks_boot.at(i).at(teams.at(j)) /= (double)NRAND;
-			ranks_bootavg[teams.at(j)] += ranks_boot.at(i).at(teams.at(j));
-		}
-	}
-
-	for (int j = 0; j < NTEAMS; j++)
-	{
-		ranks_bootavg[teams.at(j)] /= (double) bootstrap_n;
-	}
-
-	for (int i = 0; i < bootstrap_n; i++)
-	{
-		for (int j = 0; j < NTEAMS; j++)
-		{
-			ranks_bootvar[teams.at(j)] += pow(ranks_bootavg[teams.at(j)] - ranks_boot.at(i).at(teams.at(j)),2);
-		}
-	}
-
-	for (int j = 0; j < NTEAMS; j++)
-	{
-		ranks_bootvar[teams.at(j)] /= (double) (bootstrap_n - 1);
-		uncertainty[teams.at(j)] = sqrt(ranks_bootvar[teams.at(j)]);
-	}
-
-	return uncertainty;
-}
