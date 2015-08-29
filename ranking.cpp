@@ -215,7 +215,7 @@ int main(int argc, char *argv[])
 	for (i = 0; i < NRAND; i++) 
 	{
 
-		cout << i << endl;
+		cout << "Iteration: " << i << endl;
 
 		random_shuffle(teams.begin(), teams.end());
 
@@ -359,6 +359,9 @@ map <string, double> bootstrap_uncertainty(int NTEAMS, int bootstrap_n, int NRAN
 	map <string, double> ranks_bootavg;
 	map <string, double> ranks_bootvar;
 	map <string, double> uncertainty;
+	random_device rd;
+	mt19937 gen(rd());
+	uniform_int_distribution<int> dist(0,NRAND-1);
 	vector < map <string, double> > ranks_boot(bootstrap_n);
 
 	// Bootstrap uncertainty calculation
@@ -374,13 +377,13 @@ map <string, double> bootstrap_uncertainty(int NTEAMS, int bootstrap_n, int NRAN
 
 	for (int boot_i = 0; boot_i < bootstrap_n; boot_i++)
 	{
-		cout << boot_i << endl;
+		cout << "Bootstrap iteration: " << boot_i << endl;
 
 		/* Randomly select one of the permutations with replacement and get the ranks of all
 		 * teams. Do this the same number of times as the original permutations. */
 		for (int perm_i = 0; perm_i < NRAND; perm_i++)
 		{
-			perm = rand() % NRAND; // TODO: better random numbers
+			perm = dist(gen);
 
 			for (int team_i = 0; team_i < NTEAMS; team_i++)
 			{
